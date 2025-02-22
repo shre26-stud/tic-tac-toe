@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            background-color: white;
+            border: 2px solid #333;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .cell:hover {
+            background-color: #f9f9f9;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        .reset-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .reset-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Popup styles */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 2em;
+            animation: popupFadeIn 1s ease;
+        }
+
+        @keyframes popupFadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Winning line animation */
+        .winning-line {
+            background-color: rgba(0, 255, 0, 0.5);
+            animation: winningLine 1s ease forwards;
+        }
+
+        @keyframes winningLine {
+            0% {
+                background-color: transparent;
+            }
+            100% {
+                background-color: rgba(0, 255, 0, 0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div>
+        <div class="board" id="board"></div>
+        <div class="message" id="message">Player X's turn</div>
+        <button class="reset-btn" id="resetBtn">Reset Game</button>
+    </div>
+
+    <div class="popup" id="popup">Congratulations! Player <span id="winner"></span> wins!</div>
+
+    <script>
+        let currentPlayer = 'X';
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let gameOver = false;
+
+        const boardElement = document.getElementById('board');
+        const messageElement = document.getElementById('message');
+        const resetBtn = document.getElementById('resetBtn');
+        const popup = document.getElementById('popup');
+        const winnerText = document.getElementById('winner');
+
+        // Create the game board
+        function createBoard() {
+            boardElement.innerHTML = '';
+            board.forEach((value, index) => {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.setAttribute('data-index', index);
+                cell.textContent = value;
+                cell.addEventListener('click', handleCellClick);
+                boardElement.appendChild(cell);
+            });
+        }
+
+        // Handle cell click
+        function handleCellClick(event) {
+            const index = event.target.getAttribute('data-index');
+            if (board[index] === '' && !gameOver) {
+                board[index] = currentPlayer;
+                event.target.textContent = currentPlayer;
+                checkWinner();
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; // Switch player
+                messageElement.textContent = `Player ${currentPlayer}'s turn`;
+            }
+        }
+
+        // Check for a winner
+        function checkWinner() {
+            const winningCombinations = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+
+            for (let combination of winningCombinations) {
+                const [a, b, c] = combination;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    gameOver = true;
+                    highlightWinningLine(combination);
+                    showPopup(currentPlayer);
+                    return;
+                }
+            }
+
+            // Check for a draw
+            if (!board.includes('')) {
+                gameOver = true;
+                messageElement.textContent = "It's a draw!";
+            }
+        }
+
+        // Highlight the winning line
+        function highlightWinningLine(combination) {
+            combination.forEach(index => {
+                const cell = boardElement.querySelector(`.cell[data-index='${index}']`);
+                cell.classList.add('winning-line');
+            });
+        }
+
+        // Show congratulations popup
+        function showPopup(winner) {
+            winnerText.textContent = winner;
+            popup.style.display = 'block';
+        }
+
+        // Reset the game
+        resetBtn.addEventListener('click', () => {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameOver = false;
+            createBoard();
+            messageElement.textContent = `Player X's turn`;
+            popup.style.display = 'none'; // Hide popup
+        });
+
+        createBoard();
+    </script>
+
+</body>
+</html>
